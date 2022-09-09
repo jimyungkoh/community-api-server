@@ -6,7 +6,6 @@ import { TYPEORM } from '../../environments';
 @Injectable()
 export class TypeormService implements TypeOrmOptionsFactory {
   async createTypeOrmOptions(): Promise<TypeOrmModuleOptions> {
-    console.log(__dirname);
     return {
       ...TYPEORM,
       entities: [__dirname + '/../../**/**/*.entity{.ts,.js}'],

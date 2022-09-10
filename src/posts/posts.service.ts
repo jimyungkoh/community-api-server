@@ -14,6 +14,7 @@ import {
   EntityNotFoundException,
   IncorrectPasswordException,
 } from '../common/exceptions/exception';
+import { PostDto } from './dto/post.dto';
 
 @Injectable()
 export class PostsService {
@@ -60,8 +61,36 @@ export class PostsService {
     return post;
   }
 
-  update(id: number, updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
+  /**
+   * @param {number} id
+   * @param {UpdatePostDto} updatePostDto
+   * @throws {EntityNotFoundException}
+   * @throws {IncorrectPasswordException}
+   * @returns {Promise<PostEntity>}
+   */
+  async update(id: number, updatePostDto: UpdatePostDto) {
+    let post = await this.postsRepository.findOneBy({ id: id });
+
+    if (!post) {
+      throw new EntityNotFoundException();
+    }
+
+    const enteredPassword = updatePostDto.password;
+
+    if (
+      !enteredPassword ||
+      !(await this.isCorrectPassword(enteredPassword, post.password))
+    ) {
+      throw new IncorrectPasswordException();
+    }
+
+    delete updatePostDto.password;
+
+    post = Object.assign(post, updatePostDto);
+
+    await this.postsRepository.save(post);
+
+    return post;
   }
 
   /**

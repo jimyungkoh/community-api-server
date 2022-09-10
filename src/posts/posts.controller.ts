@@ -38,6 +38,7 @@ export class PostsController {
   }
 
   @Patch(':id')
+  @UseInterceptors(new NotFoundInterceptor(), new ForbiddenInterceptor())
   update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
     return this.postsService.update(+id, updatePostDto);
   }

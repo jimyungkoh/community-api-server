@@ -1,14 +1,7 @@
-import { IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import { IsNotEmpty, IsString, Matches, MaxLength } from 'class-validator';
+import { PostDto } from './post.dto';
 
-export class CreatePostDto {
-  @IsString()
-  @MaxLength(20)
-  readonly title: string;
-
-  @IsString()
-  @MaxLength(200)
-  readonly content: string;
-
+export class CreatePostDto extends PostDto {
   @IsString()
   @Matches(/^(?=.*\d).{6,}$/, {
     message:

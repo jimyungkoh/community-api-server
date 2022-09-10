@@ -2,10 +2,12 @@ import { IsString, Matches, MaxLength, MinLength } from 'class-validator';
 
 export class CreatePostDto {
   @IsString()
+  @MinLength(2)
   @MaxLength(20)
   readonly title: string;
 
   @IsString()
+  @MinLength(2)
   @MaxLength(200)
   readonly content: string;
 

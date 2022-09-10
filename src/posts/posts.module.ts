@@ -8,7 +8,7 @@ import { PostsService } from './posts.service';
 import { PostsController } from './posts.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostEntity } from './entities/post.entity';
-import { PagerMiddleware } from '../common/middlewares/PagerMiddleware';
+import { PagerMiddleware } from '../common/middlewares/posts.middleware';
 
 @Module({
   controllers: [PostsController],

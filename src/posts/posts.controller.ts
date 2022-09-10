@@ -12,7 +12,10 @@ import {
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { NotFoundInterceptor } from '../common/interceptors/http.interceptor';
+import {
+  ForbiddenInterceptor,
+  NotFoundInterceptor,
+} from '../common/interceptors/http.interceptor';
 
 @Controller('posts')
 export class PostsController {
@@ -29,9 +32,7 @@ export class PostsController {
   }
 
   @Get(':id')
-  @UseInterceptors(
-    new NotFoundInterceptor(`The requested URL was not found on this server.`),
-  )
+  @UseInterceptors(new NotFoundInterceptor())
   findOne(@Param('id') id: string) {
     return this.postsService.findOne(+id);
   }
@@ -42,9 +43,7 @@ export class PostsController {
   }
 
   @Delete(':id')
-  @UseInterceptors(
-    new NotFoundInterceptor('The requested URL was not found on this server.'),
-  )
+  @UseInterceptors(new NotFoundInterceptor(), new ForbiddenInterceptor())
   delete(@Param('id') id: string, @Body('password') password: string) {
     return this.postsService.delete(+id, password);
   }

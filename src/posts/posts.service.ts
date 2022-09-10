@@ -10,7 +10,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PostEntity } from './entities/post.entity';
 import { Repository } from 'typeorm';
 import { BCRYPT_SALT } from '../environments';
-import { EntityNotFoundException } from '../common/exceptions/exception';
+import {
+  EntityNotFoundException,
+  IncorrectPasswordException,
+} from '../common/exceptions/exception';
+import { PostDto } from './dto/post.dto';
 
 @Injectable()
 export class PostsService {
@@ -57,13 +61,43 @@ export class PostsService {
     return post;
   }
 
-  update(id: number, updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
+  /**
+   * @param {number} id
+   * @param {UpdatePostDto} updatePostDto
+   * @throws {EntityNotFoundException}
+   * @throws {IncorrectPasswordException}
+   * @returns {Promise<PostEntity>}
+   */
+  async update(id: number, updatePostDto: UpdatePostDto) {
+    let post = await this.postsRepository.findOneBy({ id: id });
+
+    if (!post) {
+      throw new EntityNotFoundException();
+    }
+
+    const enteredPassword = updatePostDto.password;
+
+    if (
+      !enteredPassword ||
+      !(await this.isCorrectPassword(enteredPassword, post.password))
+    ) {
+      throw new IncorrectPasswordException();
+    }
+
+    delete updatePostDto.password;
+
+    post = Object.assign(post, updatePostDto);
+
+    await this.postsRepository.save(post);
+
+    return post;
   }
 
   /**
-   * @param {number} id 게시물의 id
-   * @param {string} enteredPassword 게시물 삭제 권한 확인을 위한 패스워드
+   * @param {number} id
+   * @param {string} enteredPassword
+   * @throws {EntityNotFoundException}
+   * @throws {IncorrectPasswordException}
    * @returns {Promise<boolean | undefined>}
    */
   async delete(
@@ -76,24 +110,34 @@ export class PostsService {
       throw new EntityNotFoundException();
     }
 
-    await Promise.all([this.validatePassword(enteredPassword, post.password)]);
+    if (!(await this.isCorrectPassword(enteredPassword, post.password))) {
+      throw new IncorrectPasswordException();
+    }
 
     return (await this.postsRepository.delete({ id: id })) && true;
   }
 
+  /**
+   *
+   * @param {CreatePostDto} post
+   * @returns {Promise<void>}
+   * @private
+   */
   private async transformPassword(post: CreatePostDto): Promise<void> {
     post.password = await bcrypt.hash(post.password, BCRYPT_SALT);
     return Promise.resolve();
   }
 
-  private async validatePassword(
+  /**
+   * @param {string} enteredPassword
+   * @param {string} postsPassword
+   * @returns {Promise<boolean>}
+   * @private
+   */
+  private async isCorrectPassword(
     enteredPassword: string,
     postsPassword: string,
-  ) {
-    if (!(await bcrypt.compare(enteredPassword, postsPassword))) {
-      throw new ForbiddenException(
-        "you don't have permission to access this resource",
-      );
-    }
+  ): Promise<boolean> {
+    return await bcrypt.compare(enteredPassword, postsPassword);
   }
 }

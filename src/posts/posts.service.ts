@@ -10,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PostEntity } from './entities/post.entity';
 import { Repository } from 'typeorm';
 import { BCRYPT_SALT } from '../environments';
+import { EntityNotFoundException } from '../common/exceptions/exception';
 
 @Injectable()
 export class PostsService {
@@ -26,12 +27,34 @@ export class PostsService {
     return await this.postsRepository.save(createPostDto);
   }
 
-  findAll() {
-    return `This action returns all posts`;
+  async findAll(page = 1) {
+    const take = 20;
+
+    return await this.postsRepository
+      .createQueryBuilder('posts')
+      .select('posts.id')
+      .addSelect('posts.title')
+      .take(take)
+      .skip(take * (page - 1))
+      .getMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} post`;
+  async findOne(id: number) {
+    const post = await this.postsRepository
+      .createQueryBuilder('posts')
+      .select('posts.id')
+      .addSelect('posts.title')
+      .addSelect('posts.content')
+      .addSelect('posts.created_at')
+      .addSelect('posts.updated_at')
+      .where('posts.id = :id', { id: id })
+      .getOne();
+
+    if (!post) {
+      throw new EntityNotFoundException();
+    }
+
+    return post;
   }
 
   update(id: number, updatePostDto: UpdatePostDto) {
@@ -49,10 +72,11 @@ export class PostsService {
   ): Promise<boolean | undefined> {
     const post = await this.postsRepository.findOneBy({ id: id });
 
-    await Promise.all([
-      this.validatePost(id, post),
-      this.validatePassword(enteredPassword, post.password),
-    ]);
+    if (!post) {
+      throw new EntityNotFoundException();
+    }
+
+    await Promise.all([this.validatePassword(enteredPassword, post.password)]);
 
     return (await this.postsRepository.delete({ id: id })) && true;
   }
@@ -71,13 +95,5 @@ export class PostsService {
         "you don't have permission to access this resource",
       );
     }
-  }
-
-  private validatePost(id: number, post: PostEntity) {
-    if (!post) {
-      throw new NotFoundException();
-    }
-
-    return true;
   }
 }

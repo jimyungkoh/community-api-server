@@ -24,8 +24,8 @@ export class PostEntity {
    * @todo weather api 사용시 필드 주석 해제하기
    * @type {string}
    * */
-  //  @Column({ nullable: false })
-  //  weather: string;
+  @Column({ nullable: false })
+  weather: string;
 
   @CreateDateColumn({
     type: 'timestamp',

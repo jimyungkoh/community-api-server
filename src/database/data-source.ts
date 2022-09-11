@@ -9,6 +9,7 @@ import { SeederOptions } from 'typeorm-extension';
 
 const options: DataSourceOptions & SeederOptions = {
   ...TYPEORM,
+  synchronize: true,
   entities: [PostEntity],
   seeds: [TYPEORM_SEEDING_SEEDS],
   factories: [TYPEORM_SEEDING_FACTORIES],

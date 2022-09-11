@@ -46,9 +46,16 @@ const TYPEORM = environment[NODE_ENV];
 const TYPEORM_SEEDING_SEEDS = env.TYPEORM_SEEDING_SEEDS;
 const TYPEORM_SEEDING_FACTORIES = env.TYPEORM_SEEDING_FACTORIES;
 
+// Weather API
+const key = env.WEATHER_API_KEY;
+const city = 'Seoul';
+const lang = 'ko';
+const WEATHER_URL = `http://api.weatherapi.com/v1/current.json?key=${key}&q=${city}&lang=${lang}`;
+
 export {
   TYPEORM,
   BCRYPT_SALT,
   TYPEORM_SEEDING_SEEDS,
   TYPEORM_SEEDING_FACTORIES,
+  WEATHER_URL,
 };

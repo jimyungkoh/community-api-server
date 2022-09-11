@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, Matches, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsString, Matches } from 'class-validator';
 import { PostDto } from './post.dto';
 
 export class CreatePostDto extends PostDto {
@@ -8,4 +8,8 @@ export class CreatePostDto extends PostDto {
       'password must be longer than 6 characters and contain at least 1 number',
   })
   password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  readonly weather: string;
 }

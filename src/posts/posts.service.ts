@@ -1,20 +1,16 @@
 import * as bcrypt from 'bcrypt';
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Repository } from 'typeorm';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { BCRYPT_SALT } from '../environments';
+import { PostEntity } from './entities/post.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { PostEntity } from './entities/post.entity';
-import { Repository } from 'typeorm';
-import { BCRYPT_SALT } from '../environments';
+
 import {
   EntityNotFoundException,
   IncorrectPasswordException,
 } from '../common/exceptions/exception';
-import { PostDto } from './dto/post.dto';
 
 @Injectable()
 export class PostsService {
@@ -28,6 +24,8 @@ export class PostsService {
   ): Promise<CreatePostDto | undefined> {
     await this.transformPassword(createPostDto);
 
+    console.log(createPostDto);
+
     return await this.postsRepository.save(createPostDto);
   }
 
@@ -38,6 +36,7 @@ export class PostsService {
       .createQueryBuilder('posts')
       .select('posts.id')
       .addSelect('posts.title')
+      .addSelect('posts.weather')
       .take(take)
       .skip(take * (page - 1))
       .getMany();
@@ -49,6 +48,7 @@ export class PostsService {
       .select('posts.id')
       .addSelect('posts.title')
       .addSelect('posts.content')
+      .addSelect('posts.weather')
       .addSelect('posts.created_at')
       .addSelect('posts.updated_at')
       .where('posts.id = :id', { id: id })

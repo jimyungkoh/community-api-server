@@ -9,7 +9,6 @@ export class TypeormService implements TypeOrmOptionsFactory {
     return {
       ...TYPEORM,
       entities: [__dirname + '/../../**/**/*.entity{.ts,.js}'],
-      // synchronize: true,
       logging: true,
     };
   }

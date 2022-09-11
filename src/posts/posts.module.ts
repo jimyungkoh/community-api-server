@@ -5,10 +5,7 @@ import {
   RequestMethod,
 } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import {
-  PagerMiddleware,
-  WeatherInsertMiddleware,
-} from '../common/middlewares/posts.middleware';
+import { PagerMiddleware } from '../common/middlewares/posts.middleware';
 import { HttpModule } from '@nestjs/axios';
 import { PostsController } from './posts.controller';
 import { PostsService } from './posts.service';
@@ -24,8 +21,5 @@ export class PostsModule implements NestModule {
     consumer
       .apply(PagerMiddleware)
       .forRoutes({ path: 'posts', method: RequestMethod.GET });
-    consumer
-      .apply(WeatherInsertMiddleware)
-      .forRoutes({ path: 'posts', method: RequestMethod.POST });
   }
 }

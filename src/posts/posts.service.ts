@@ -2,7 +2,7 @@ import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BCRYPT_SALT } from '../environments';
+import { BCRYPT_SALT, WEATHER_URL } from '../environments';
 import { PostEntity } from './entities/post.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -11,21 +11,24 @@ import {
   EntityNotFoundException,
   IncorrectPasswordException,
 } from '../common/exceptions/exception';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectRepository(PostEntity)
     private postsRepository: Repository<PostEntity>,
+    private readonly httpService: HttpService,
   ) {}
 
   async create(
     createPostDto: CreatePostDto,
   ): Promise<CreatePostDto | undefined> {
-    await this.transformPassword(createPostDto);
-
-    console.log(createPostDto);
-
+    await Promise.all([
+      this.encryptPassword(createPostDto),
+      this.insertWeatherStatus(createPostDto),
+    ]);
     return await this.postsRepository.save(createPostDto);
   }
 
@@ -123,8 +126,19 @@ export class PostsService {
    * @returns {Promise<void>}
    * @private
    */
-  private async transformPassword(post: CreatePostDto): Promise<void> {
+  private async encryptPassword(post: CreatePostDto): Promise<void> {
     post.password = await bcrypt.hash(post.password, BCRYPT_SALT);
+    return Promise.resolve();
+  }
+
+  /**
+   * @param {CreatePostDto} post
+   * @returns {Promise<void>}
+   * @private
+   */
+  private async insertWeatherStatus(post: CreatePostDto): Promise<void> {
+    const { data } = await firstValueFrom(this.httpService.get(WEATHER_URL));
+    post.weather = data.current.condition.text;
     return Promise.resolve();
   }
 

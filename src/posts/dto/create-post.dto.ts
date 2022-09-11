@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, Matches } from 'class-validator';
+import { IsString, Matches } from 'class-validator';
 import { PostDto } from './post.dto';
 
 export class CreatePostDto extends PostDto {
@@ -9,7 +9,5 @@ export class CreatePostDto extends PostDto {
   })
   password: string;
 
-  @IsString()
-  @IsNotEmpty()
-  readonly weather: string;
+  weather: string;
 }
